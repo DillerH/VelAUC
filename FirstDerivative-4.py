@@ -54,19 +54,19 @@ def compileName(fileName):
     i = 9
     while i < len(strlist):
         templist = strlist[i].split()
-        fileNameList.append(templist[9])
+        fileNameList.append(templist[9]) #location specific to log
         i+=3
     i = 10
     while i < len(strlist):
         templist = strlist[i].split()
-        wlist.append(wconversion * int(templist[1].replace(",","")))
+        wlist.append(wconversion * int(templist[1].replace(",",""))) #shouldn't matter but it extracts time and reovolution**2 here, and temp
         timelist.append(int(templist[3].replace(",","")) - 1157)
         Klist.append(273.15 + float(templist[5].replace(",","")))
         w2tlist.append(float(templist[7]))
         i+=3
     inputlist = list(zip(fileNameList, timelist, Klist, wlist, w2tlist))
     df_out = pd.DataFrame(inputlist, columns=['FileName','time','temp','w','w2t'])
-    df_out['xbar'] = 0 
+    df_out['xbar'] = 0 #makes array lists of zeros for future compliation into a pandas df
     df_out['xmen'] = 0
     df_out['dx'] = 0
     df_out['lnxbar'] = 0 
@@ -100,13 +100,14 @@ def compileData(fileName):
 def cleanData(df_in, reflist):
     df_in['Abs'] = ss.savgol_filter(df_in['Abs'],7,3) ##ss filtering
     
-    df_cut = df_in.query('Abs < 0') #think about making this just this line
-    indexMax = df_cut.index[-1] + 3
-    reflist.append(df_in.at[indexMax-2,'r'])
-    df_out = df_in.truncate(before=indexMax)
+    df_cut = df_in.query('Abs < 0') #makes a list of all zeros left in the dataframe
+    indexMax = df_cut.index[-1] + 3 #takes the index of the last one from the query location and adds three
+    reflist.append(df_in.at[indexMax-2,'r']) #adds new starting location to master data frame
+    df_out = df_in.truncate(before=indexMax) #truncates data
     return df_out
 
 def dervData(dfI):
+         #derivates and exports a dataframe of both derivated data
     midpoint = (dfI['r']+dfI['r'].shift(1))/2 #Thanks PJ for this line it takes the data frame x1 +x2 then divides by two plots into a series
     dAbs = dfI['Abs'].diff()/dfI['r'].diff()
     inlist = list(zip(midpoint, dAbs))
@@ -116,7 +117,7 @@ def dervData(dfI):
 
 def findxBar(df_in):
     max_d1_index = df_in['d1'].idxmax()#find dA/dr maximum
-    xbar = df_in.at[max_d1_index,'r']#declares xbar to be the
+    xbar = df_in.at[max_d1_index,'r']#declares xbar to be the maximum
     return xbar
 
 def grpPlot(df_Vel):
